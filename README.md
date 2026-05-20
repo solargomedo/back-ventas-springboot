@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Backend - Springboot-API-REST (Ventas)
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot) [![Java](https://img.shields.io/badge/Java-17-orange?logo=java)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
@@ -113,3 +114,6 @@ cd "c:\Users\dell\Downloads\proyecto semestral\back-Ventas_SpringBoot\Springboot
 ## 📌 Nota
 
 Este módulo está preparado para funcionar como microservicio independiente. En un pipeline DevOps, su build y deploy deben ejecutarse como unidades separadas para garantizar escalabilidad y despliegue autónomo.
+=======
+# back-ventas-springboot
+>>>>>>> 555e735f9d7a9d0499c97cb0a2d8630c92f6c099
