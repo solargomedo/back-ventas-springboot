@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Backend - Springboot-API-REST (Ventas)
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot) [![Java](https://img.shields.io/badge/Java-17-orange?logo=java)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
