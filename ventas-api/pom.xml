@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.citt</groupId>
-	<artifactId>Springboot-API-REST</artifactId>
+	<artifactId>ventas-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Springboot-API-REST</name>
-	<description>Demo project for Spring Boot</description>
+	<name>ventas-api</name>
+	<description>Microservicio REST para gestion de ventas</description>
 	<url/>
 	<licenses>
 		<license/>

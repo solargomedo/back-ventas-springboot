@@ -21,7 +21,7 @@ services:
 
   ventas-api:
     build:
-      context: ./Springboot-API-REST
+      context: ./ventas-api
     image: innovatech/ventas-api:local
     container_name: innovatech-ventas-api
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
 
   despachos-api:
     build:
-      context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+      context: ./despachos-api
     image: innovatech/despachos-api:local
     container_name: innovatech-despachos-api
     restart: unless-stopped

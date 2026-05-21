@@ -1,9 +1,9 @@
 # Backend Innovatech - Ventas y Despachos
 
-Repositorio backend compuesto por dos microservicios Spring Boot:
+Repositorio backend compuesto por dos microservicios Spring Boot separados en carpetas hermanas:
 
-- `Springboot-API-REST`: API de ventas, expuesta en el puerto `8080`.
-- `back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO`: API de despachos, expuesta en el puerto `8081`.
+- `ventas-api`: API de ventas, expuesta en el puerto `8080`.
+- `despachos-api`: API de despachos, expuesta en el puerto `8081`.
 
 Ambos servicios usan MySQL y se despliegan en contenedores Docker.
 
@@ -11,26 +11,27 @@ Ambos servicios usan MySQL y se despliegan en contenedores Docker.
 
 ```text
 back-ventas-springboot/
-|-- Springboot-API-REST/
+|-- ventas-api/
 |   |-- Dockerfile
 |   |-- .dockerignore
 |   |-- pom.xml
 |   `-- src/
-|-- back-Despachos_SpringBoot/
-|   `-- Springboot-API-REST-DESPACHO/
-|       |-- Dockerfile
-|       |-- .dockerignore
-|       |-- pom.xml
-|       `-- src/
+|-- despachos-api/
+|   |-- Dockerfile
+|   |-- .dockerignore
+|   |-- pom.xml
+|   `-- src/
 |-- docker-compose.yml
 |-- docker-compose.prod.yml
 |-- .env.example
 `-- .github/workflows/deploy.yml
 ```
 
+Esta organizacion evita carpetas contenedoras innecesarias y permite explicar claramente que el backend esta compuesto por dos microservicios independientes.
+
 ## Variables
 
-Para ejecución local se puede copiar `.env.example` a `.env`:
+Para ejecucion local se puede copiar `.env.example` a `.env`:
 
 ```env
 MYSQL_ROOT_PASSWORD=rootpass
@@ -42,7 +43,7 @@ DESPACHOS_PORT=8081
 
 Las aplicaciones Spring Boot reciben estas variables:
 
-| Variable | Descripción |
+| Variable | Descripcion |
 |---|---|
 | `DB_ENDPOINT` | Host de MySQL. En Compose local es `mysql`. |
 | `DB_PORT` | Puerto interno de MySQL, normalmente `3306`. |
@@ -50,9 +51,9 @@ Las aplicaciones Spring Boot reciben estas variables:
 | `DB_USERNAME` | Usuario de base de datos. |
 | `DB_PASSWORD` | Password de base de datos. |
 
-## Ejecución Local Con Docker
+## Ejecucion Local Con Docker
 
-Desde la raíz del repositorio:
+Desde la raiz del repositorio:
 
 ```powershell
 docker compose up --build -d
@@ -94,7 +95,7 @@ volumes:
   - mysql-data:/var/lib/mysql
 ```
 
-Se eligió un volumen nombrado porque Docker administra su ubicación, evita depender de rutas específicas del sistema operativo y conserva la información aunque los contenedores sean recreados. Esto cumple la persistencia requerida para que ventas y despachos no se pierdan tras reinicios.
+Se eligio un volumen nombrado porque Docker administra su ubicacion, evita depender de rutas especificas del sistema operativo y conserva la informacion aunque los contenedores sean recreados. Esto cumple la persistencia requerida para que ventas y despachos no se pierdan tras reinicios.
 
 ## Dockerfiles
 
@@ -103,7 +104,7 @@ Cada microservicio usa un Dockerfile multi-stage:
 1. Etapa `build`: usa Maven con Java 17 para compilar el proyecto y generar el `.jar`.
 2. Etapa final: usa solo JRE Java 17 Alpine, copia el `.jar` y ejecuta con un usuario no root.
 
-Esto reduce el tamaño de imagen final y evita ejecutar la aplicación como `root`.
+Esto reduce el tamano de imagen final y evita ejecutar la aplicacion como `root`.
 
 ## CI/CD
 
@@ -128,10 +129,10 @@ Flujo:
 |---|---|
 | `DOCKERHUB_USERNAME` | Usuario del registro Docker Hub. |
 | `DOCKERHUB_TOKEN` | Token de acceso Docker Hub. |
-| `BACKEND_EC2_HOST` | IP pública o DNS de la instancia EC2 backend. |
+| `BACKEND_EC2_HOST` | IP publica o DNS de la instancia EC2 backend. |
 | `EC2_USER` | Usuario SSH de EC2, por ejemplo `ubuntu` o `ec2-user`. |
 | `EC2_SSH_KEY` | Llave privada SSH para acceder a EC2. |
-| `MYSQL_ROOT_PASSWORD` | Password root de MySQL en producción. |
+| `MYSQL_ROOT_PASSWORD` | Password root de MySQL en produccion. |
 | `DB_NAME` | Nombre de base de datos. |
 | `VENTAS_PORT` | Puerto publicado para ventas, normalmente `8080`. |
 | `DESPACHOS_PORT` | Puerto publicado para despachos, normalmente `8081`. |
@@ -141,14 +142,14 @@ Flujo:
 Ventas:
 
 ```powershell
-cd Springboot-API-REST
+cd ventas-api
 .\mvnw.cmd test
 ```
 
 Despachos:
 
 ```powershell
-cd back-Despachos_SpringBoot\Springboot-API-REST-DESPACHO
+cd despachos-api
 .\mvnw.cmd test
 ```
 

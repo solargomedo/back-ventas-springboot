@@ -27,7 +27,7 @@ jobs:
       - name: Build and push ventas image
         uses: docker/build-push-action@v6
         with:
-          context: ./Springboot-API-REST
+          context: ./ventas-api
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/ventas-api:${{ env.IMAGE_TAG }}
@@ -36,7 +36,7 @@ jobs:
       - name: Build and push despachos image
         uses: docker/build-push-action@v6
         with:
-          context: ./back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          context: ./despachos-api
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/despachos-api:${{ env.IMAGE_TAG }}

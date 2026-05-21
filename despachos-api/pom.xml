@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.citt</groupId>
-	<artifactId>Springboot-API-REST-DESPACHO</artifactId>
+	<artifactId>despachos-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Springboot-API-REST-DESPACHO</name>
-	<description>Demo proyect despacho endpoint</description>
+	<name>despachos-api</name>
+	<description>Microservicio REST para gestion de despachos</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -58,6 +58,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+			<version>1.18.36</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
