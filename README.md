@@ -1,119 +1,211 @@
-<<<<<<< HEAD
-# Backend - Springboot-API-REST (Ventas)
+# Backend Innovatech - Ventas y Despachos
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot) [![Java](https://img.shields.io/badge/Java-17-orange?logo=java)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+Backend compuesto por dos microservicios Spring Boot separados y orquestados con Docker Compose.
 
-## 🎯 Propósito
+- `ventas-api`: gestiona ventas y ordenes de compra.
+- `despachos-api`: gestiona ordenes de despacho.
+- `mysql`: base de datos compartida con persistencia mediante volumen Docker.
 
-Este servicio expone la API REST de ventas. Su responsabilidad principal es manejar la CRUD de ventas y permitir que el frontend consulte y actualice estados de venta.
+## Estructura
 
-## 📁 Estructura del proyecto
-
+```text
+back-ventas-springboot/
+|-- ventas-api/
+|   |-- Dockerfile
+|   |-- .dockerignore
+|   |-- pom.xml
+|   |-- mvnw
+|   |-- mvnw.cmd
+|   `-- src/
+|-- despachos-api/
+|   |-- Dockerfile
+|   |-- .dockerignore
+|   |-- pom.xml
+|   |-- mvnw
+|   |-- mvnw.cmd
+|   `-- src/
+|-- docker-compose.yml
+|-- docker-compose.prod.yml
+|-- .env
+|-- .env.example
+|-- README.md
+`-- .github/
+    `-- workflows/
+        `-- deploy.yml
 ```
-back-Ventas_SpringBoot/Springboot-API-REST/
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-└── src/
-    ├── main/java/com/citt/
-    │   ├── SpringbootApiRestApplication.java
-    │   ├── controller/
-    │   │   └── VentaController.java
-    │   ├── exceptions/
-    │   │   └── RestResponseEntityExceptionHandler.java
-    │   └── persistence/
-    │       ├── entity/
-    │       ├── repository/
-    │       └── services/
-    └── main/resources/
-        ├── application.properties
-        └── application-test.properties
+
+Esta estructura deja ambos microservicios al mismo nivel, sin carpetas contenedoras innecesarias. Cada servicio conserva su propio `pom.xml`, wrapper Maven, `src/` y `Dockerfile`.
+
+## Puertos Locales
+
+| Servicio | Puerto contenedor | Puerto local | URL |
+|---|---:|---:|---|
+| MySQL | `3306` | `3307` | `localhost:3307` |
+| Ventas API | `8080` | `8083` | `http://localhost:8083/api/v1/ventas` |
+| Despachos API | `8081` | `8081` | `http://localhost:8081/api/v1/despachos` |
+
+Ventas se publica localmente en `8083` porque el puerto `8080` suele estar ocupado en el equipo local. Dentro del contenedor sigue escuchando en `8080`.
+
+## Variables
+
+Archivo `.env` local:
+
+```env
+MYSQL_ROOT_PASSWORD=rootpass
+DB_NAME=innovatechdb
+MYSQL_PORT=3307
+VENTAS_PORT=8083
+DESPACHOS_PORT=8081
 ```
 
-## 🔌 Endpoints principales
+Variables usadas por los microservicios Spring Boot dentro de Compose:
 
-| Método | Ruta | Descripción |
+| Variable | Valor local | Descripcion |
 |---|---|---|
-| POST | `/api/v1/ventas` | Crear nueva venta |
-| PUT | `/api/v1/ventas/{idVenta}` | Actualizar venta |
-| GET | `/api/v1/ventas` | Listar ventas |
-| GET | `/api/v1/ventas/{idVenta}` | Obtener venta específica |
-| DELETE | `/api/v1/ventas/{idVenta}` | Eliminar venta |
+| `DB_ENDPOINT` | `mysql` | Nombre DNS del contenedor MySQL en la red Docker. |
+| `DB_PORT` | `3306` | Puerto interno de MySQL dentro de Docker. |
+| `DB_NAME` | `innovatechdb` | Base de datos creada al iniciar MySQL. |
+| `DB_USERNAME` | `root` | Usuario de base de datos. |
+| `DB_PASSWORD` | `rootpass` | Password definido en `.env`. |
 
-## 🛠️ Dependencias clave detectadas
+## Ejecucion Con Docker
 
-- `spring-boot-starter-web`
-- `spring-boot-starter-validation`
-- `spring-boot-starter-data-jpa`
-- `spring-boot-starter-test`
-- `springdoc-openapi-starter-webmvc-ui`
-- `mysql-connector-j`
-- `org.projectlombok:lombok`
-
-## 🌐 Configuración detectada
-
-### `src/main/resources/application.properties`
-
-```properties
-spring.application.name=Springboot-API-REST
-spring.datasource.url=jdbc:mysql://${DB_ENDPOINT}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
-spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-spring.datasource.platform=mysql
-spring.jpa.database=mysql
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
-springdoc.swagger-ui.path=/swagger-ui.html
-```
-
-### `src/main/resources/application-test.properties`
-
-- Usa H2 en memoria para pruebas.
-- `spring.jpa.hibernate.ddl-auto=create-drop`.
-- Consola H2 habilitada.
-
-## 🚀 Cómo ejecutar
+Desde la raiz del backend:
 
 ```powershell
-cd "c:\Users\dell\Downloads\proyecto semestral\back-Ventas_SpringBoot\Springboot-API-REST"
-./mvnw clean package
-./mvnw spring-boot:run
+docker compose down
+docker compose up --build -d
 ```
 
-## 🧪 Pruebas
+Ver contenedores:
 
 ```powershell
-./mvnw test
+docker compose ps
 ```
 
-## ⚠️ Variables de entorno necesarias
+Ver logs:
 
-| Variable | Uso | Ejemplo |
-|---|---|---|
-| `DB_ENDPOINT` | Host de la DB | `localhost` |
-| `DB_PORT` | Puerto MySQL | `3306` |
-| `DB_NAME` | Nombre de la base | `ventasdb` |
-| `DB_USERNAME` | Usuario DB | `root` |
-| `DB_PASSWORD` | Contraseña DB | `secret` |
+```powershell
+docker compose logs -f
+```
 
-## 🔧 Consideraciones DevOps
+Detener sin borrar datos:
 
-- No se detectó `Dockerfile` en este módulo.
-- No se detectó pipeline de GitHub Actions.
-- Para producción en AWS EC2, se recomienda empaquetar con `./mvnw clean package` y ejecutar el JAR o contenedor Docker.
-- El servicio expone API REST sin autenticación.
+```powershell
+docker compose down
+```
 
-## 🧱 Recomendaciones de despliegue en AWS EC2
+Detener y borrar la base persistida:
 
-1. Construir imagen Docker o JAR.
-2. Configurar `Security Group` con puerto `8080`.
-3. Usar subred pública para backend si se expone directamente.
-4. Mejor opción: usar RDS en subred privada para MySQL y no exponer 3306 públicamente.
+```powershell
+docker compose down -v
+```
 
-## 📌 Nota
+## Pruebas Rapidas De API
 
-Este módulo está preparado para funcionar como microservicio independiente. En un pipeline DevOps, su build y deploy deben ejecutarse como unidades separadas para garantizar escalabilidad y despliegue autónomo.
-=======
-# back-ventas-springboot
->>>>>>> 555e735f9d7a9d0499c97cb0a2d8630c92f6c099
+Listar ventas:
+
+```powershell
+curl http://localhost:8083/api/v1/ventas
+```
+
+Crear una venta:
+
+```powershell
+curl -X POST http://localhost:8083/api/v1/ventas `
+  -H "Content-Type: application/json" `
+  -d "{\"fechaCompra\":\"2026-05-21\",\"direccionCompra\":\"Av Siempre Viva 123\",\"valorCompra\":25000,\"despachoGenerado\":false}"
+```
+
+Listar despachos:
+
+```powershell
+curl http://localhost:8081/api/v1/despachos
+```
+
+Swagger:
+
+```text
+http://localhost:8083/swagger-ui.html
+http://localhost:8081/swagger-ui.html
+```
+
+## Integracion Con Frontend
+
+El frontend debe apuntar a:
+
+```env
+VITE_API_VENTAS=http://localhost:8083
+VITE_API_DESPACHOS=http://localhost:8081
+```
+
+Si se cambian estas variables, el frontend debe reconstruirse porque Vite inserta las variables durante el build.
+
+## Persistencia
+
+MySQL usa un volumen nombrado:
+
+```yaml
+volumes:
+  - mysql-data:/var/lib/mysql
+```
+
+Se usa un volumen nombrado porque Docker administra su ubicacion y mantiene los datos aunque los contenedores se reinicien o se recreen. Solo se elimina si se ejecuta `docker compose down -v`.
+
+## Dockerfiles
+
+Cada microservicio usa Dockerfile multi-stage:
+
+1. `maven:3.9.9-eclipse-temurin-17`: compila el proyecto y genera el `.jar`.
+2. `eclipse-temurin:17-jre-alpine`: ejecuta solo el `.jar` con un usuario no root.
+
+Esto reduce el peso de la imagen final y evita ejecutar la aplicacion con privilegios de root.
+
+## Pruebas Maven
+
+Ventas:
+
+```powershell
+cd ventas-api
+.\mvnw.cmd test
+```
+
+Despachos:
+
+```powershell
+cd despachos-api
+.\mvnw.cmd test
+```
+
+Los tests usan perfil `test` con H2, por lo que no dependen de MySQL real.
+
+## CI/CD
+
+El workflow `.github/workflows/deploy.yml` se activa con push a la rama `deploy`.
+
+Flujo del pipeline:
+
+1. Descarga el repositorio.
+2. Autentica en Docker Hub.
+3. Construye y publica:
+   - `${DOCKERHUB_USERNAME}/ventas-api:${GITHUB_SHA}`
+   - `${DOCKERHUB_USERNAME}/despachos-api:${GITHUB_SHA}`
+   - tags `latest`
+4. Copia `docker-compose.prod.yml` a la instancia EC2 backend.
+5. Crea un `.env` remoto con GitHub Secrets.
+6. Ejecuta `docker compose pull`.
+7. Ejecuta `docker compose up -d`.
+
+## GitHub Secrets
+
+| Secret | Uso |
+|---|---|
+| `DOCKERHUB_USERNAME` | Usuario Docker Hub. |
+| `DOCKERHUB_TOKEN` | Token Docker Hub. |
+| `BACKEND_EC2_HOST` | IP publica o DNS de la instancia EC2 backend. |
+| `EC2_USER` | Usuario SSH de EC2. |
+| `EC2_SSH_KEY` | Llave privada SSH. |
+| `MYSQL_ROOT_PASSWORD` | Password root de MySQL en produccion. |
+| `DB_NAME` | Nombre de base de datos. |
+| `VENTAS_PORT` | Puerto publicado para ventas en EC2. |
+| `DESPACHOS_PORT` | Puerto publicado para despachos en EC2. |
