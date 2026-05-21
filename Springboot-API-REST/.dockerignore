@@ -1,20 +1,7 @@
-# Ignora archivos de configuración locales
-.env
-*.iml
-.idea/
-*.log
-
-# Ignora dependencias locales
 target/
-.mvn/
-.settings/
-
-# Ignora control de versiones y sistema de build
+.mvn/wrapper/maven-wrapper.jar
 .git/
 .gitignore
-docker-compose.override.yml
-Dockerfile*
-
-# Ignora archivos temporales
-*.swp
-*~
+.DS_Store
+README.md
+*.log
