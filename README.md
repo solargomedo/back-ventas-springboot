@@ -1,13 +1,12 @@
 # Backend Innovatech - Ventas y Despachos
 
-Repositorio backend compuesto por dos microservicios Spring Boot separados en carpetas hermanas:
+Backend compuesto por dos microservicios Spring Boot separados y orquestados con Docker Compose.
 
-- `ventas-api`: API de ventas, expuesta en el puerto `8080`.
-- `despachos-api`: API de despachos, expuesta en el puerto `8081`.
+- `ventas-api`: gestiona ventas y ordenes de compra.
+- `despachos-api`: gestiona ordenes de despacho.
+- `mysql`: base de datos compartida con persistencia mediante volumen Docker.
 
-Ambos servicios usan MySQL y se despliegan en contenedores Docker.
-
-## Estructura DevOps
+## Estructura
 
 ```text
 back-ventas-springboot/
@@ -15,58 +14,74 @@ back-ventas-springboot/
 |   |-- Dockerfile
 |   |-- .dockerignore
 |   |-- pom.xml
+|   |-- mvnw
+|   |-- mvnw.cmd
 |   `-- src/
 |-- despachos-api/
 |   |-- Dockerfile
 |   |-- .dockerignore
 |   |-- pom.xml
+|   |-- mvnw
+|   |-- mvnw.cmd
 |   `-- src/
 |-- docker-compose.yml
 |-- docker-compose.prod.yml
+|-- .env
 |-- .env.example
-`-- .github/workflows/deploy.yml
+|-- README.md
+`-- .github/
+    `-- workflows/
+        `-- deploy.yml
 ```
 
-Esta organizacion evita carpetas contenedoras innecesarias y permite explicar claramente que el backend esta compuesto por dos microservicios independientes.
+Esta estructura deja ambos microservicios al mismo nivel, sin carpetas contenedoras innecesarias. Cada servicio conserva su propio `pom.xml`, wrapper Maven, `src/` y `Dockerfile`.
+
+## Puertos Locales
+
+| Servicio | Puerto contenedor | Puerto local | URL |
+|---|---:|---:|---|
+| MySQL | `3306` | `3307` | `localhost:3307` |
+| Ventas API | `8080` | `8083` | `http://localhost:8083/api/v1/ventas` |
+| Despachos API | `8081` | `8081` | `http://localhost:8081/api/v1/despachos` |
+
+Ventas se publica localmente en `8083` porque el puerto `8080` suele estar ocupado en el equipo local. Dentro del contenedor sigue escuchando en `8080`.
 
 ## Variables
 
-Para ejecucion local se puede copiar `.env.example` a `.env`:
+Archivo `.env` local:
 
 ```env
 MYSQL_ROOT_PASSWORD=rootpass
 DB_NAME=innovatechdb
-MYSQL_PORT=3306
-VENTAS_PORT=8080
+MYSQL_PORT=3307
+VENTAS_PORT=8083
 DESPACHOS_PORT=8081
 ```
 
-Las aplicaciones Spring Boot reciben estas variables:
+Variables usadas por los microservicios Spring Boot dentro de Compose:
 
-| Variable | Descripcion |
-|---|---|
-| `DB_ENDPOINT` | Host de MySQL. En Compose local es `mysql`. |
-| `DB_PORT` | Puerto interno de MySQL, normalmente `3306`. |
-| `DB_NAME` | Nombre de la base de datos. |
-| `DB_USERNAME` | Usuario de base de datos. |
-| `DB_PASSWORD` | Password de base de datos. |
+| Variable | Valor local | Descripcion |
+|---|---|---|
+| `DB_ENDPOINT` | `mysql` | Nombre DNS del contenedor MySQL en la red Docker. |
+| `DB_PORT` | `3306` | Puerto interno de MySQL dentro de Docker. |
+| `DB_NAME` | `innovatechdb` | Base de datos creada al iniciar MySQL. |
+| `DB_USERNAME` | `root` | Usuario de base de datos. |
+| `DB_PASSWORD` | `rootpass` | Password definido en `.env`. |
 
-## Ejecucion Local Con Docker
+## Ejecucion Con Docker
 
-Desde la raiz del repositorio:
+Desde la raiz del backend:
 
 ```powershell
+docker compose down
 docker compose up --build -d
 ```
 
-Servicios publicados:
+Ver contenedores:
 
-| Servicio | URL local |
-|---|---|
-| Ventas | `http://localhost:8080/api/v1/ventas` |
-| Despachos | `http://localhost:8081/api/v1/despachos` |
-| Swagger ventas | `http://localhost:8080/swagger-ui.html` |
-| Swagger despachos | `http://localhost:8081/swagger-ui.html` |
+```powershell
+docker compose ps
+```
 
 Ver logs:
 
@@ -80,64 +95,73 @@ Detener sin borrar datos:
 docker compose down
 ```
 
-Detener y borrar persistencia:
+Detener y borrar la base persistida:
 
 ```powershell
 docker compose down -v
 ```
 
+## Pruebas Rapidas De API
+
+Listar ventas:
+
+```powershell
+curl http://localhost:8083/api/v1/ventas
+```
+
+Crear una venta:
+
+```powershell
+curl -X POST http://localhost:8083/api/v1/ventas `
+  -H "Content-Type: application/json" `
+  -d "{\"fechaCompra\":\"2026-05-21\",\"direccionCompra\":\"Av Siempre Viva 123\",\"valorCompra\":25000,\"despachoGenerado\":false}"
+```
+
+Listar despachos:
+
+```powershell
+curl http://localhost:8081/api/v1/despachos
+```
+
+Swagger:
+
+```text
+http://localhost:8083/swagger-ui.html
+http://localhost:8081/swagger-ui.html
+```
+
+## Integracion Con Frontend
+
+El frontend debe apuntar a:
+
+```env
+VITE_API_VENTAS=http://localhost:8083
+VITE_API_DESPACHOS=http://localhost:8081
+```
+
+Si se cambian estas variables, el frontend debe reconstruirse porque Vite inserta las variables durante el build.
+
 ## Persistencia
 
-El servicio `mysql` usa un volumen nombrado:
+MySQL usa un volumen nombrado:
 
 ```yaml
 volumes:
   - mysql-data:/var/lib/mysql
 ```
 
-Se eligio un volumen nombrado porque Docker administra su ubicacion, evita depender de rutas especificas del sistema operativo y conserva la informacion aunque los contenedores sean recreados. Esto cumple la persistencia requerida para que ventas y despachos no se pierdan tras reinicios.
+Se usa un volumen nombrado porque Docker administra su ubicacion y mantiene los datos aunque los contenedores se reinicien o se recreen. Solo se elimina si se ejecuta `docker compose down -v`.
 
 ## Dockerfiles
 
-Cada microservicio usa un Dockerfile multi-stage:
+Cada microservicio usa Dockerfile multi-stage:
 
-1. Etapa `build`: usa Maven con Java 17 para compilar el proyecto y generar el `.jar`.
-2. Etapa final: usa solo JRE Java 17 Alpine, copia el `.jar` y ejecuta con un usuario no root.
+1. `maven:3.9.9-eclipse-temurin-17`: compila el proyecto y genera el `.jar`.
+2. `eclipse-temurin:17-jre-alpine`: ejecuta solo el `.jar` con un usuario no root.
 
-Esto reduce el tamano de imagen final y evita ejecutar la aplicacion como `root`.
+Esto reduce el peso de la imagen final y evita ejecutar la aplicacion con privilegios de root.
 
-## CI/CD
-
-El workflow `.github/workflows/deploy.yml` se activa con push a la rama `deploy`.
-
-Flujo:
-
-1. Descarga el repositorio.
-2. Inicia Docker Buildx.
-3. Autentica en Docker Hub.
-4. Construye y publica:
-   - `${DOCKERHUB_USERNAME}/ventas-api:${GITHUB_SHA}`
-   - `${DOCKERHUB_USERNAME}/despachos-api:${GITHUB_SHA}`
-   - tags `latest`
-5. Copia `docker-compose.prod.yml` a la instancia EC2 backend.
-6. Crea un `.env` remoto con secrets.
-7. Ejecuta `docker compose pull` y `docker compose up -d`.
-
-## GitHub Secrets Requeridos
-
-| Secret | Uso |
-|---|---|
-| `DOCKERHUB_USERNAME` | Usuario del registro Docker Hub. |
-| `DOCKERHUB_TOKEN` | Token de acceso Docker Hub. |
-| `BACKEND_EC2_HOST` | IP publica o DNS de la instancia EC2 backend. |
-| `EC2_USER` | Usuario SSH de EC2, por ejemplo `ubuntu` o `ec2-user`. |
-| `EC2_SSH_KEY` | Llave privada SSH para acceder a EC2. |
-| `MYSQL_ROOT_PASSWORD` | Password root de MySQL en produccion. |
-| `DB_NAME` | Nombre de base de datos. |
-| `VENTAS_PORT` | Puerto publicado para ventas, normalmente `8080`. |
-| `DESPACHOS_PORT` | Puerto publicado para despachos, normalmente `8081`. |
-
-## Pruebas
+## Pruebas Maven
 
 Ventas:
 
@@ -153,4 +177,35 @@ cd despachos-api
 .\mvnw.cmd test
 ```
 
-Los tests usan perfil `test` con H2 para no depender de MySQL real.
+Los tests usan perfil `test` con H2, por lo que no dependen de MySQL real.
+
+## CI/CD
+
+El workflow `.github/workflows/deploy.yml` se activa con push a la rama `deploy`.
+
+Flujo del pipeline:
+
+1. Descarga el repositorio.
+2. Autentica en Docker Hub.
+3. Construye y publica:
+   - `${DOCKERHUB_USERNAME}/ventas-api:${GITHUB_SHA}`
+   - `${DOCKERHUB_USERNAME}/despachos-api:${GITHUB_SHA}`
+   - tags `latest`
+4. Copia `docker-compose.prod.yml` a la instancia EC2 backend.
+5. Crea un `.env` remoto con GitHub Secrets.
+6. Ejecuta `docker compose pull`.
+7. Ejecuta `docker compose up -d`.
+
+## GitHub Secrets
+
+| Secret | Uso |
+|---|---|
+| `DOCKERHUB_USERNAME` | Usuario Docker Hub. |
+| `DOCKERHUB_TOKEN` | Token Docker Hub. |
+| `BACKEND_EC2_HOST` | IP publica o DNS de la instancia EC2 backend. |
+| `EC2_USER` | Usuario SSH de EC2. |
+| `EC2_SSH_KEY` | Llave privada SSH. |
+| `MYSQL_ROOT_PASSWORD` | Password root de MySQL en produccion. |
+| `DB_NAME` | Nombre de base de datos. |
+| `VENTAS_PORT` | Puerto publicado para ventas en EC2. |
+| `DESPACHOS_PORT` | Puerto publicado para despachos en EC2. |
