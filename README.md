@@ -146,16 +146,16 @@ Si se cambian estas variables, el frontend debe reconstruirse porque Vite insert
 Instancia EC2 backend:
 
 ```text
-IP publica: 44.198.166.184
-DNS publico: ec2-44-198-166-184.compute-1.amazonaws.com
+IP publica: 3.238.32.197
+DNS publico: ec2-3-238-32-197.compute-1.amazonaws.com
 IP privada: 172.31.8.186
 ```
 
 URLs publicas de verificacion:
 
 ```text
-Ventas API: http://44.198.166.184:8083/api/v1/ventas
-Despachos API: http://44.198.166.184:8081/api/v1/despachos
+Ventas API: http://3.238.32.197:8083/api/v1/ventas
+Despachos API: http://3.238.32.197:8081/api/v1/despachos
 ```
 
 Reglas de entrada requeridas en el Security Group backend:
@@ -169,7 +169,7 @@ Reglas de entrada requeridas en el Security Group backend:
 GitHub Secret que debe apuntar a esta instancia:
 
 ```text
-BACKEND_EC2_HOST=44.198.166.184
+BACKEND_EC2_HOST=3.238.32.197
 ```
 
 Si AWS Academy detiene e inicia el laboratorio, la IP publica puede cambiar. En ese caso se debe actualizar `BACKEND_EC2_HOST` y tambien los secrets del frontend `VITE_API_VENTAS` y `VITE_API_DESPACHOS`.
@@ -246,7 +246,7 @@ Flujo del pipeline:
 Valores usados actualmente:
 
 ```text
-BACKEND_EC2_HOST=44.198.166.184
+BACKEND_EC2_HOST=3.238.32.197
 VENTAS_PORT=8083
 DESPACHOS_PORT=8081
 ```
