@@ -25,6 +25,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       DB_ENDPOINT: mysql
       DB_PORT: 3306
       DB_NAME: ${DB_NAME}
@@ -43,6 +44,7 @@ services:
       mysql:
         condition: service_healthy
     environment:
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
       DB_ENDPOINT: mysql
       DB_PORT: 3306
       DB_NAME: ${DB_NAME}
