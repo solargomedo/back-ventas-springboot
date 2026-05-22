@@ -141,6 +141,39 @@ VITE_API_DESPACHOS=http://localhost:8081
 
 Si se cambian estas variables, el frontend debe reconstruirse porque Vite inserta las variables durante el build.
 
+## Despliegue Actual En AWS
+
+Instancia EC2 backend:
+
+```text
+IP publica: 44.198.166.184
+DNS publico: ec2-44-198-166-184.compute-1.amazonaws.com
+IP privada: 172.31.8.186
+```
+
+URLs publicas de verificacion:
+
+```text
+Ventas API: http://44.198.166.184:8083/api/v1/ventas
+Despachos API: http://44.198.166.184:8081/api/v1/despachos
+```
+
+Reglas de entrada requeridas en el Security Group backend:
+
+| Tipo | Puerto | Origen |
+|---|---:|---|
+| SSH | `22` | `0.0.0.0/0` |
+| TCP personalizado | `8083` | `0.0.0.0/0` |
+| TCP personalizado | `8081` | `0.0.0.0/0` |
+
+GitHub Secret que debe apuntar a esta instancia:
+
+```text
+BACKEND_EC2_HOST=44.198.166.184
+```
+
+Si AWS Academy detiene e inicia el laboratorio, la IP publica puede cambiar. En ese caso se debe actualizar `BACKEND_EC2_HOST` y tambien los secrets del frontend `VITE_API_VENTAS` y `VITE_API_DESPACHOS`.
+
 ## Persistencia
 
 MySQL usa un volumen nombrado:
@@ -209,3 +242,30 @@ Flujo del pipeline:
 | `DB_NAME` | Nombre de base de datos. |
 | `VENTAS_PORT` | Puerto publicado para ventas en EC2. |
 | `DESPACHOS_PORT` | Puerto publicado para despachos en EC2. |
+
+Valores usados actualmente:
+
+```text
+BACKEND_EC2_HOST=44.198.166.184
+VENTAS_PORT=8083
+DESPACHOS_PORT=8081
+```
+
+## Estabilidad En EC2
+
+La instancia backend ejecuta MySQL y dos aplicaciones Spring Boot. En instancias pequenas de AWS Academy se limita la memoria de Java desde `docker-compose.prod.yml`:
+
+```yaml
+JAVA_TOOL_OPTIONS: "-Xms128m -Xmx256m"
+```
+
+Adicionalmente, se recomienda configurar swap de 2 GB en la EC2 backend para evitar bloqueos durante el arranque:
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+free -h
+```
