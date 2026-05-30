@@ -146,7 +146,7 @@ Si se cambian estas variables, el frontend debe reconstruirse porque Vite insert
 Instancia EC2 backend:
 
 ```text
-IP publica: 3.238.32.197
+IP publica: 18.204.43.82
 DNS publico: ec2-3-238-32-197.compute-1.amazonaws.com
 IP privada: 172.31.8.186
 ```
