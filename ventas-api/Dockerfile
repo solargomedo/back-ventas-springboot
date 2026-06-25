@@ -10,7 +10,7 @@ RUN mvn -B clean package -DskipTests
 
 FROM eclipse-temurin:17-jre
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 WORKDIR /app
 
