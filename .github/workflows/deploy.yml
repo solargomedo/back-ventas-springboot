@@ -32,26 +32,30 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push ventas-api image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./ventas-api
-          file: ./ventas-api/Dockerfile
-          push: true
-          platforms: linux/amd64
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.VENTAS_REPOSITORY }}:latest
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --provenance=false \
+            --push \
+            -t $ECR_REGISTRY/$VENTAS_REPOSITORY:arm64 \
+            -t $ECR_REGISTRY/$VENTAS_REPOSITORY:latest \
+            ./ventas-api
 
       - name: Build and push despachos-api image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./despachos-api
-          file: ./despachos-api/Dockerfile
-          push: true
-          platforms: linux/amd64
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.DESPACHOS_REPOSITORY }}:latest
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --provenance=false \
+            --push \
+            -t $ECR_REGISTRY/$DESPACHOS_REPOSITORY:arm64 \
+            -t $ECR_REGISTRY/$DESPACHOS_REPOSITORY:latest \
+            ./despachos-api
